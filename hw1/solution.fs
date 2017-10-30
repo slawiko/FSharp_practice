@@ -70,14 +70,6 @@ let rec number_before_reaching_sum(sum: int, ls: int list) =
         else 0
 
 // Helper
-let rec calculate_month(num: int, ls: int list) =
-    if ls.IsEmpty
-    then 0
-    else 
-        if num - ls.Head > 0
-        then calculate_month(num - ls.Head, ls.Tail) + 1
-        else 1
-
 let number_month_size: int list = [
     31;
     28;
@@ -95,12 +87,12 @@ let number_month_size: int list = [
 // end:Helper
 
 let what_month(number: int) =
-    calculate_month(number, number_month_size)
+    number_before_reaching_sum(number, number_month_size) + 1
 
 let rec month_range(day1: int, day2: int) =
     if day1 > day2
     then []
-    else calculate_month(day1, number_month_size) :: month_range(day1 + 1, day2)
+    else (number_before_reaching_sum(day1, number_month_size) + 1) :: month_range(day1 + 1, day2)
 
 let rec oldest(dates: (int*int*int) list) =
     let rec find_oldest(date: (int*int*int), dates: (int*int*int) list) =
@@ -132,10 +124,10 @@ let rec remove_duplicates(temp_months: int list, months: int list, index: int) =
     if temp_months.IsEmpty
     then []
     else
-        let fi = first_index(get_nth_int(months, index), months)
-        if index = fi
+        let current_element = get_nth_int(months, index)
+        if index = first_index(current_element, months)
         then
-            get_nth_int(months, index) :: remove_duplicates(temp_months.Tail, months, index + 1)
+            current_element :: remove_duplicates(temp_months.Tail, months, index + 1)
         else 
             remove_duplicates(temp_months.Tail, months, index + 1)
 // end:Helper

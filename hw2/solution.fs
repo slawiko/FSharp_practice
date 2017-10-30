@@ -29,14 +29,14 @@ let rec get_substitutions1(substitutions: string list list, s: string): string l
                 | Some x -> x @ get_substitutions1(tail, s)
 
 let rec get_substitutions2(substitutions: string list list, s: string): string list =
-    let rec aux(substitutions: string list list, s: string, acc: string list) =
+    let rec aux(substitutions: string list list, acc: string list) =
         match substitutions with
             | [] -> acc
             | head::tail ->
                 match all_except_option(s, head) with
-                    | None -> aux(tail, s, acc)
-                    | Some x -> aux(tail, s, acc @ x)
-    in aux(substitutions, s, [])
+                    | None -> aux(tail, acc)
+                    | Some x -> aux(tail, acc @ x)
+    in aux(substitutions, [])
 
 let similar_names(substitutions: string list list, name: Name): Name list =
     let rec construct_names(firsts: string list, m: string, l: string) = 
@@ -67,18 +67,11 @@ let rec remove_card(cs: card list, c: card, e: System.Exception): card list =
             then tail
             else head::remove_card(tail, c, e)
 
-let all_same_color(cs: card list): bool =
+let rec all_same_color(cs: card list): bool =
     match cs with
-        | [] -> true
-        | head::tail ->
-            let rec is_same_color(cs1: card list, prev: color) =
-                match cs1 with
-                    | [] -> true
-                    | h::t ->
-                        if (prev = card_color(h))
-                        then is_same_color(t, prev)
-                        else false
-            in is_same_color(tail, card_color(head))
+        | [] | [_] -> true
+        | first::second::tail -> 
+            (card_color(first) = card_color(second)) && all_same_color(second::tail)
 
 let sum_cards(cs: card list): int =
     let rec aux(cs1: card list, acc: int) =
@@ -99,17 +92,17 @@ let score(held_cards: card list, goal: int): int =
     else tmp
 
 let officiate(cards: card list, moves: move list, goal: int): int =
-    let rec officiate_rec(cards: card list, moves: move list, goal: int, held_cards: card list): int =
+    let rec officiate_rec(cards: card list, moves: move list, held_cards: card list): int =
         match moves with
             | [] -> score(held_cards, goal)
             | head_m::tail_m ->
                 match head_m with
-                    | Discard c -> officiate_rec(cards, tail_m, goal, remove_card(held_cards, c, IllegalMove))
+                    | Discard c -> officiate_rec(cards, tail_m, remove_card(held_cards, c, IllegalMove))
                     | Draw ->
                         match cards with
                             | [] -> score(held_cards, goal)
                             | head_c::tail_c ->
                                 if (sum_cards(head_c::held_cards) > goal)
                                 then score(head_c::held_cards, goal)
-                                else officiate_rec(tail_c, tail_m, goal, head_c::held_cards)
-    in officiate_rec(cards, moves, goal, [])
+                                else officiate_rec(tail_c, tail_m, head_c::held_cards)
+    in officiate_rec(cards, moves, [])
