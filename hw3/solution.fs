@@ -53,4 +53,8 @@ let rec all_answers cb ls =
         | head::tail ->
             match cb(head) with
                 | None -> None
-                | Some x -> Some(x::(all_answers cb tail))
+                | Some x ->
+                    match all_answers cb tail with
+                        | None -> None
+                        | Some y -> Some(x@y)
+
