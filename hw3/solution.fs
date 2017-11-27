@@ -20,8 +20,7 @@ let rec g f1 f2 p =
 
 type typ = | Anything | UnitT | IntT | TupleT of typ list | Type of string
 
-let only_capitals ls =
-    List.filter (fun str -> Char.IsUpper(str, 0)) ls
+let only_capitals = List.filter (fun str -> Char.IsUpper(str, 0))
 
 let longest_string1 ls =
     List.fold (fun acc str -> if (String.length(acc) < String.length(str)) then str else acc) "" ls
@@ -29,11 +28,11 @@ let longest_string1 ls =
 let longest_string2 ls =
     longest_string1(List.fold (fun acc str -> str::acc) [] ls)
 
-let longest_string_helper reversed ls = if reversed then longest_string2(ls) else longest_string1(ls)
+let longest_string_helper cmp = List.fold (fun acc str -> if (cmp str acc) then str else acc)  ""
 
-let longest_string3 = longest_string_helper false
+let longest_string3 ls = longest_string_helper (fun acc x -> String.length(x) < String.length(acc)) ls
 
-let longest_string4 = longest_string_helper true
+let longest_string4 ls = longest_string_helper (fun acc x -> String.length(x) <= String.length(acc)) ls
 
 let longest_capitalized ls = (only_capitals >> longest_string1) ls
 
